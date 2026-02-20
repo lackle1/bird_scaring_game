@@ -1,30 +1,45 @@
 import pygame
+import random
+import globals
 from models.player import Player
-from models.crow import Crow
+from models.bird import Bird
 
 class Game:
-    SCREEN_WIDTH = 800.0
-    SCREEN_HEIGHT = 600.0
+
+    BIRD_SPAWN_FREQ = [20, 120] # Timer will be anywhere between these two values
+
+    @staticmethod
+    def get_new_spawn_timer():
+        return random.randint(Game.BIRD_SPAWN_FREQ[0], Game.BIRD_SPAWN_FREQ[1])
 
     def __init__(self):
         # Initialize pygame components
         pygame.init()
-        self.screen = pygame.display.set_mode((Game.SCREEN_WIDTH, Game.SCREEN_HEIGHT))
+        self.screen = pygame.display.set_mode((globals.SCREEN_WIDTH, globals.SCREEN_HEIGHT))
         pygame.display.set_caption("Bird Scare")
         self.clock = pygame.time.Clock()
         self.dt = 0  # Delta time
         self.running = True
 
         # Create player object
-        self.player = Player(Game.SCREEN_WIDTH/2, Game.SCREEN_HEIGHT/2)
+        self.player = Player(globals.SCREEN_WIDTH/2, globals.SCREEN_HEIGHT/2)
 
         # Create crow
-        self.crow = Crow(0, 0)
+        self.birds = []
 
-
+        self.spawn_timer = Game.get_new_spawn_timer()
 
     def update(self):
         self.player.update()
+        for bird in self.birds:
+            bird.update()
+
+        # Spawn new bird
+        self.spawn_timer -= 1
+        if self.spawn_timer < 0:
+            self.birds.append(Bird())
+            self.spawn_timer = Game.get_new_spawn_timer()
+
 
     def render(self):
         # Clear the surface
@@ -32,7 +47,8 @@ class Game:
 
         # Draw entities
         self.player.render(self.screen)
-        self.crow.render(self.screen)
+        for bird in self.birds:
+            bird.render(self.screen)
 
 
     def handle_events(self) -> None:
