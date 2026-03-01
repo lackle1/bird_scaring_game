@@ -3,6 +3,7 @@ import random
 import globals
 from models.player import Player
 from models.bird import Bird
+from models.tilemap import Tilemap
 
 class Game:
 
@@ -20,6 +21,9 @@ class Game:
         self.clock = pygame.time.Clock()
         self.dt = 0  # Delta time
         self.running = True
+
+        # Create a tilemap
+        self.tilemap = Tilemap("content/grass.png")
 
         # Create player object
         self.player = Player(globals.SCREEN_WIDTH/2, globals.SCREEN_HEIGHT/2)
@@ -44,6 +48,11 @@ class Game:
     def render(self):
         # Clear the surface
         self.screen.fill((0, 255, 0))
+
+        # Display tilemap
+        self.tilemap.render()
+
+        self.screen.blit(self.tilemap.surf, self.tilemap.rect)
 
         # Draw entities
         self.player.render(self.screen)
