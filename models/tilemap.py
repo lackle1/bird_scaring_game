@@ -12,7 +12,7 @@ class Tilemap:
 
         """
         Here we initialize a map that show the layout of our tileset
-        Each different tile will be encoded with a number
+        Each different tile will be encoded with a number (the index in the tilset)
         """
         self.map = np.zeros(self.size, dtype=int)
 
