@@ -26,7 +26,7 @@ class Game:
         self.tilemap = Tilemap("content/grass.png")
 
         # Create player object
-        self.player = Player(globals.SCREEN_WIDTH/2, globals.SCREEN_HEIGHT/2)
+        self.player = Player()
 
         # Create crow
         self.birds = []
@@ -37,6 +37,8 @@ class Game:
         self.player.update()
         for bird in self.birds:
             bird.update()
+
+        self.player.check_birds(self.birds)
 
         # Spawn new bird
         self.spawn_timer -= 1

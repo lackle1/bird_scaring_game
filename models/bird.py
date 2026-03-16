@@ -3,7 +3,10 @@ import globals
 import random
 from pygame.constants import RLEACCEL
 
-class Bird:
+from entity import Entity
+
+
+class Bird(Entity):
 
     FLY_SPEED = 2
     LANDING_BOUNDS = pg.Rect(globals.SCREEN_WIDTH * 0.1, globals.SCREEN_HEIGHT * 0.1,
@@ -45,9 +48,12 @@ class Bird:
         diff = self.target_pos - self.pos
         self.vel = diff.normalize() * Bird.FLY_SPEED
 
+        # Flag for conditional movement
+        self.scared = False
+
     def update(self):
         if self.vel != 0:
-            if (self.target_pos - self.pos).length_squared() < self.vel.length_squared():
+            if (self.target_pos - self.pos).length_squared() < self.vel.length_squared() and not self.scared:
                 self.pos = self.target_pos
                 self.vel = 0
             else:
@@ -55,3 +61,12 @@ class Bird:
 
     def render(self, screen):
         screen.blit(self.sprite, self.pos)
+
+    def fly_away(self, direction):
+        """
+        The bird will be scared and fly away
+        in the opposite direction of the player's
+        """
+        if not self.scared:
+            self.scared = True
+            self.vel = direction.normalize() * Bird.FLY_SPEED

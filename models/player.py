@@ -2,11 +2,12 @@ import pygame as pg
 from pygame.constants import RLEACCEL
 
 import globals
+from entity import Entity
 
 
-class Player(pg.sprite.Sprite):
+class Player(Entity):
     START_SPEED = 4
-    def __init__(self, x, y):
+    def __init__(self):
         super(Player, self).__init__()
         self.sprite = pg.image.load("content/player.png").convert()
         self.sprite.set_colorkey((0, 0, 0), RLEACCEL)
@@ -17,7 +18,6 @@ class Player(pg.sprite.Sprite):
                                    globals.SCREEN_HEIGHT/2 - self.rect.height/2)
 
         self.speed = Player.START_SPEED
-
 
 
     def update(self):
@@ -44,3 +44,16 @@ class Player(pg.sprite.Sprite):
     def render(self, screen):
         screen.blit(self.sprite, self.pos)
 
+    def scare_bird(self, bird):
+        """
+        Compute the vector from the player to the bird
+        and scare it away
+        """
+        target = bird.pos - self.pos
+
+        bird.fly_away(target)
+
+    def check_birds(self, birds):
+        for bird in birds:
+            if (bird.pos - self.pos).length() <= 100:
+                self.scare_bird(bird)
