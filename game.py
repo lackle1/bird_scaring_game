@@ -1,6 +1,7 @@
 import pygame
 import random
 import globals
+from grid import Grid
 from models.player import Player
 from models.bird import Bird
 from models.tilemap import Tilemap
@@ -33,18 +34,34 @@ class Game:
 
         self.spawn_timer = Game.get_new_spawn_timer()
 
+        # Create a grid object
+        self.grid = Grid()
+        cell_x, cell_y = self.grid.update_position(self.player.get_cell_coords(), self.player.pos, self.player)
+        self.player.set_cell_coords(cell_x, cell_y)
+
     def update(self):
         self.player.update()
+        cell_x, cell_y = self.grid.update_position(self.player.get_cell_coords(), self.player.pos, self.player)
+        self.player.set_cell_coords(cell_x, cell_y)
         for bird in self.birds:
             bird.update()
+            cell_x, cell_y = self.grid.update_position(bird.get_cell_coords(), bird.pos, bird)
+            bird.set_cell_coords(cell_x, cell_y)
+            if bird.scared:
+                if bird.pos[0] < 0 or bird.pos[0] > globals.SCREEN_WIDTH or bird.pos[1] < 0 or bird.pos[1] > globals.SCREEN_HEIGHT:
+                    self.birds.remove(bird)
+
 
         self.player.check_birds(self.birds)
 
         # Spawn new bird
         self.spawn_timer -= 1
         if self.spawn_timer < 0:
-            self.birds.append(Bird())
+            new_bird = Bird()
+            self.birds.append(new_bird)
             self.spawn_timer = Game.get_new_spawn_timer()
+            cell_x, cell_y = self.grid.update_position(new_bird.get_cell_coords(), new_bird.pos, new_bird)
+            new_bird.set_cell_coords(cell_x, cell_y)
 
 
     def render(self):
