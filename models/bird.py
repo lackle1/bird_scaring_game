@@ -8,7 +8,7 @@ from entity import Entity
 
 class Bird(Entity):
 
-    FLY_SPEED = 2
+    FLY_SPEED = 4
     LANDING_BOUNDS = pg.Rect(globals.SCREEN_WIDTH * 0.1, globals.SCREEN_HEIGHT * 0.1,
                              globals.SCREEN_WIDTH * 0.8, globals.SCREEN_HEIGHT * 0.8)
 
@@ -34,7 +34,6 @@ class Bird(Entity):
         target_pos = pg.math.Vector2(random.randint(Bird.LANDING_BOUNDS.left, Bird.LANDING_BOUNDS.right),
                                      random.randint(Bird.LANDING_BOUNDS.top, Bird.LANDING_BOUNDS.bottom))
 
-        print(start_pos, side)
         return start_pos, target_pos
 
     def __init__(self):

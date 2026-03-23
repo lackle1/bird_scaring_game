@@ -8,7 +8,7 @@ from models.tilemap import Tilemap
 
 class Game:
 
-    BIRD_SPAWN_FREQ = [20, 120] # Timer will be anywhere between these two values
+    BIRD_SPAWN_FREQ = [10, 50] # Timer will be anywhere between these two values
 
     @staticmethod
     def get_new_spawn_timer():
@@ -52,7 +52,7 @@ class Game:
                     self.birds.remove(bird)
 
 
-        self.player.check_birds(self.birds)
+        self.player.check_birds(self.grid)
 
         # Spawn new bird
         self.spawn_timer -= 1

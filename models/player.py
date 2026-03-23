@@ -53,7 +53,11 @@ class Player(Entity):
 
         bird.fly_away(target)
 
-    def check_birds(self, birds):
-        for bird in birds:
-            if (bird.pos - self.pos).length() <= 100:
-                self.scare_bird(bird)
+    def check_birds(self, grid):
+        """
+        Check all the birds in adjacent cells
+        """
+        cell_x, cell_y = self.get_cell_coords()
+        for unit in grid.get_unit_from_adjacent_cells(cell_x, cell_y):
+            if (unit.pos - self.pos).length() <= 100 and unit != self:
+                self.scare_bird(unit)
