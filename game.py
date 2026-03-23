@@ -26,11 +26,11 @@ class Game:
         # Create a tilemap
         self.tilemap = Tilemap("content/grass.png")
 
+        self.entities = []
+
         # Create player object
         self.player = Player()
-
-        # Create crow
-        self.birds = []
+        self.entities.append(self.player)
 
         self.spawn_timer = Game.get_new_spawn_timer()
 
@@ -39,18 +39,22 @@ class Game:
         cell_x, cell_y = self.grid.update_position(self.player.get_cell_coords(), self.player.pos, self.player)
         self.player.set_cell_coords(cell_x, cell_y)
 
-    def update(self):
-        self.player.update()
-        cell_x, cell_y = self.grid.update_position(self.player.get_cell_coords(), self.player.pos, self.player)
-        self.player.set_cell_coords(cell_x, cell_y)
-        for bird in self.birds:
-            bird.update()
-            cell_x, cell_y = self.grid.update_position(bird.get_cell_coords(), bird.pos, bird)
-            bird.set_cell_coords(cell_x, cell_y)
-            if bird.scared:
-                if bird.pos[0] < -bird.rect.width or bird.pos[0] > globals.SCREEN_WIDTH or bird.pos[1] < -bird.rect.height or bird.pos[1] > globals.SCREEN_HEIGHT:
-                    self.birds.remove(bird)
+        # Define game state
+        self.curr_state = "playing"
 
+        # Create UI elements
+        self.score_font = pygame.font.Font("content/Arcade-Normal/ARCADE_N.TTF", 24)
+
+    def update_game(self):
+        for entity in self.entities:
+            entity.update()
+            cell_x, cell_y = self.grid.update_position(entity.get_cell_coords(), entity.pos, entity)
+            entity.set_cell_coords(cell_x, cell_y)
+            if isinstance(entity, Bird):
+                if entity.scared:
+                    if entity.pos[0] < -entity.rect.width or entity.pos[0] > globals.SCREEN_WIDTH or entity.pos[
+                        1] < -entity.rect.height or entity.pos[1] > globals.SCREEN_HEIGHT:
+                        self.entities.remove(entity)
 
         self.player.check_birds(self.grid)
 
@@ -58,10 +62,19 @@ class Game:
         self.spawn_timer -= 1
         if self.spawn_timer < 0:
             new_bird = Bird()
-            self.birds.append(new_bird)
+            self.entities.append(new_bird)
             self.spawn_timer = Game.get_new_spawn_timer()
             cell_x, cell_y = self.grid.update_position(new_bird.get_cell_coords(), new_bird.pos, new_bird)
             new_bird.set_cell_coords(cell_x, cell_y)
+
+    def update_pause(self):
+        pass
+
+    def update(self):
+        if self.curr_state == "playing":
+            self.update_game()
+        elif self.curr_state == "pause":
+            self.update_pause()
 
 
     def render(self):
@@ -74,9 +87,15 @@ class Game:
         self.screen.blit(self.tilemap.surf, self.tilemap.rect)
 
         # Draw entities
-        self.player.render(self.screen)
-        for bird in self.birds:
-            bird.render(self.screen)
+        for entity in self.entities:
+            entity.render(self.screen)
+
+        score = self.score_font.render(str(self.player.score), True, (255, 255, 255))
+        self.screen.blit(score, (30, 30))
+
+        if self.curr_state == "pause":
+            # Blur and draw the UI if the game is paused
+            pass
 
 
     def handle_events(self) -> None:
