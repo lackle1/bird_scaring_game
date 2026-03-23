@@ -9,8 +9,9 @@ from entity import Entity
 class Bird(Entity):
 
     FLY_SPEED = 4
-    LANDING_BOUNDS = pg.Rect(globals.SCREEN_WIDTH * 0.1, globals.SCREEN_HEIGHT * 0.1,
-                             globals.SCREEN_WIDTH * 0.8, globals.SCREEN_HEIGHT * 0.8)
+    LANDING_MARGIN = 0.0
+    LANDING_BOUNDS = pg.Rect(globals.SCREEN_WIDTH * LANDING_MARGIN, globals.SCREEN_HEIGHT * LANDING_MARGIN,
+                             globals.SCREEN_WIDTH * (1 - LANDING_MARGIN), globals.SCREEN_HEIGHT * (1 - LANDING_MARGIN))
 
     @staticmethod
     def random_spawn():
