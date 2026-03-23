@@ -12,7 +12,7 @@ from entity import Entity
 class Bird(Entity):
 
     FLY_SPEED = 6
-    DIST_BEFORE_DECEL = 100
+    DIST_BEFORE_DECEL = 180
     DECELERATION = (FLY_SPEED**2) / (2 * DIST_BEFORE_DECEL)
 
     LANDING_MARGIN = 0.025
@@ -24,7 +24,7 @@ class Bird(Entity):
         closest_edge = np.argmin((target.x, globals.SCREEN_WIDTH - target.x,
                                   target.y, globals.SCREEN_HEIGHT - target.y))
 
-        dist_from_edge = 50
+        dist_from_edge = 200
         match closest_edge:
             case 0:
                 start_pos = pg.math.Vector2(
@@ -43,8 +43,6 @@ class Bird(Entity):
                     sorted((0, target.x + random.randint(-100, 100), globals.SCREEN_WIDTH))[1],
                     globals.SCREEN_HEIGHT + dist_from_edge)
 
-        print(f'Edge: {closest_edge}')
-        print(f'Pos: {start_pos}')
         return start_pos
 
     @staticmethod
