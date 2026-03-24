@@ -57,7 +57,7 @@ class Bird(Entity):
 
     def __init__(self):
 
-        self.animated_sprite = AnimatedSprite('content/crow.png', Vec2(16, 16), 2)
+        self.animated_sprite = AnimatedSprite('content/crow.png', Vec2(24, 24), 2)
         self.animated_sprite.add_animation('idle', 1, 0)
         self.animated_sprite.add_animation('fly', 2, 2)
 
