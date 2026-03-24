@@ -48,7 +48,7 @@ class Game:
             cell_x, cell_y = self.grid.update_position(bird.get_cell_coords(), bird.pos, bird)
             bird.set_cell_coords(cell_x, cell_y)
             if bird.scared:
-                if bird.pos[0] < -bird.rect.width or bird.pos[0] > globals.SCREEN_WIDTH or bird.pos[1] < -bird.rect.height or bird.pos[1] > globals.SCREEN_HEIGHT:
+                if bird.pos[0] < -bird.sprite_dims.x or bird.pos[0] > globals.SCREEN_WIDTH or bird.pos[1] < -bird.sprite_dims.y or bird.pos[1] > globals.SCREEN_HEIGHT:
                     self.birds.remove(bird)
 
 
