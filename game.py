@@ -70,8 +70,7 @@ class Game:
             entity.set_cell_coords(cell_x, cell_y)
             if isinstance(entity, Bird):
                 if entity.scared:
-                    if entity.pos[0] < -entity.rect.width or entity.pos[0] > globals.SCREEN_WIDTH or entity.pos[
-                        1] < -entity.rect.height or entity.pos[1] > globals.SCREEN_HEIGHT:
+                    if entity.pos[0] < -entity.sprite_dims.x or entity.pos[0] > globals.SCREEN_WIDTH or entity.pos[1] < -entity.sprite_dims.y or entity.pos[1] > globals.SCREEN_HEIGHT:
                         self.entities.remove(entity)
 
         self.player.check_birds(self.grid)

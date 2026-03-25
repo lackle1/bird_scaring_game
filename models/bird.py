@@ -1,12 +1,14 @@
 import math
 
 import pygame as pg
+from pygame.math import Vector2 as Vec2
 import globals
 import random
 from pygame.constants import RLEACCEL
 import numpy as np
 
 from entity import Entity
+from animated_sprite import AnimatedSprite
 
 
 class Bird(Entity):
@@ -54,21 +56,28 @@ class Bird(Entity):
         return Bird.get_start_pos(target_pos), target_pos
 
     def __init__(self):
-        self.sprite = pg.image.load("content/crow.png").convert()
-        self.sprite.set_colorkey((0, 0, 0), RLEACCEL)
-        self.sprite = pg.transform.scale(self.sprite, (self.sprite.get_width() * 2, self.sprite.get_height() * 2))
-        self.rect = self.sprite.get_rect()
+
+        self.animated_sprite = AnimatedSprite('content/crow.png', Vec2(24, 24), 2)
+        self.animated_sprite.add_animation('idle', 1, 0)
+        self.animated_sprite.add_animation('fly', 2, 2)
+
+        self.sprite_dims = self.animated_sprite.frame_dims
 
         self.pos, self.target_pos = Bird.random_spawn()
 
         diff = self.target_pos - self.pos
         self.vel = diff.normalize() * Bird.FLY_SPEED
+        self.dir = self.get_dir()
+        self.animated_sprite.set_animation('fly', self.dir)
 
         # Flag for conditional movement
         self.scared = False
+
         self.decelerating = False
 
     def update(self):
+
+        self.animated_sprite.update()
 
         dist_to_target_sqrd = (self.target_pos - self.pos).length_squared()
 
@@ -76,10 +85,13 @@ class Bird(Entity):
             if dist_to_target_sqrd < self.vel.length_squared() and not self.scared:
                 self.pos = self.target_pos
                 self.vel = 0
+                self.animated_sprite.set_animation('idle', self.dir)
             elif not self.scared and (self.decelerating or math.sqrt(dist_to_target_sqrd) < Bird.DIST_BEFORE_DECEL):
                 self.decelerating = True
                 speed = self.vel.length() - Bird.DECELERATION
-                if speed < 0: self.vel = 0
+                if speed < 0:
+                    self.vel = 0
+                    self.animated_sprite.set_animation('idle', self.dir)
                 else:
                     self.vel = self.vel.normalize() * speed
                     self.pos += self.vel
@@ -87,7 +99,11 @@ class Bird(Entity):
                 self.pos += self.vel
 
     def render(self, screen):
-        screen.blit(self.sprite, self.pos)
+        # screen.blit(self.sprite, self.pos)
+        self.animated_sprite.render(screen, self.pos)
+
+    def get_dir(self):
+        return 1 if self.vel.x >= 0 else 0
 
     def fly_away(self, direction):
         """
@@ -97,3 +113,5 @@ class Bird(Entity):
         if not self.scared:
             self.scared = True
             self.vel = direction.normalize() * Bird.FLY_SPEED
+            self.dir = self.get_dir()
+            self.animated_sprite.set_animation('fly', self.dir)
