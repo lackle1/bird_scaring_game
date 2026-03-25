@@ -1,0 +1,24 @@
+{
+  "button": {
+    "colours": {
+      "normal_bg": "#8b5a2b",
+      "hovered_bg": "#a4713a",
+      "active_bg": "#a4713a",
+      "normal_border": "#3e2a14",
+      "hovered_border": "#000000",
+      "active_border": "#000000",
+      "normal_text": "#f2d16b",
+      "hovered_text": "#fff2a8",
+      "active_text": "#c7a84f"
+    },
+    "misc": {
+      "border_width": "3",
+      "shadow_width": "2",
+      "shape": "rectangle"
+    },
+    "font": {
+      "name": "pixel",
+      "size": "20"
+    }
+  }
+}

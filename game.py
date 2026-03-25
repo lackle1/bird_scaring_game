@@ -45,17 +45,32 @@ class Game:
 
         # Create UI elements
         self.manager = pggui.UIManager((globals.SCREEN_WIDTH, globals.SCREEN_HEIGHT))
+        self.manager.add_font_paths(
+            "pixel",
+            "content/Arcade-Normal/ARCADE_N.TTF"
+        )
+        # Reload theme so it picks up the font
+        self.manager.get_theme().load_theme("content/theme.json")
 
-        play_layout_rect = pg.Rect(globals.SCREEN_WIDTH / 2 - globals.BUTTON_WIDTH / 2,
-                              globals.SCREEN_HEIGHT / 2 - (globals.BUTTON_HEIGHT + globals.BUTTONS_SPACING / 2),
-                              globals.BUTTON_WIDTH, globals.BUTTON_HEIGHT)
+        center_x = globals.SCREEN_WIDTH // 2
+        center_y = globals.SCREEN_HEIGHT // 2
+
+        play_layout_rect = pg.Rect(
+            center_x - globals.BUTTON_WIDTH // 2,
+            center_y - globals.BUTTON_HEIGHT - globals.BUTTONS_SPACING // 2,
+            globals.BUTTON_WIDTH,
+            globals.BUTTON_HEIGHT
+        )
         self.play_button = pggui.elements.UIButton(relative_rect=play_layout_rect,
                                                     text='Play',
                                                     manager=self.manager)
 
-        quit_layout_rect = pg.Rect(globals.SCREEN_WIDTH / 2 - globals.BUTTON_WIDTH / 2,
-                                   globals.SCREEN_HEIGHT / 2 - globals.BUTTON_HEIGHT + globals.BUTTONS_SPACING,
-                                   globals.BUTTON_WIDTH, globals.BUTTON_HEIGHT)
+        quit_layout_rect = pg.Rect(
+            center_x - globals.BUTTON_WIDTH // 2,
+            center_y + globals.BUTTONS_SPACING // 2,
+            globals.BUTTON_WIDTH,
+            globals.BUTTON_HEIGHT
+        )
         self.quit_button = pggui.elements.UIButton(relative_rect=quit_layout_rect,
                                                    text='Quit',
                                                    manager=self.manager)
