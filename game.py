@@ -1,4 +1,5 @@
-import pygame
+import pygame as pg
+import pygame_gui as pggui
 import random
 import globals
 from grid import Grid
@@ -15,11 +16,11 @@ class Game:
         return random.randint(Game.BIRD_SPAWN_FREQ[0], Game.BIRD_SPAWN_FREQ[1])
 
     def __init__(self):
-        # Initialize pygame components
-        pygame.init()
-        self.screen = pygame.display.set_mode((globals.SCREEN_WIDTH, globals.SCREEN_HEIGHT))
-        pygame.display.set_caption("Bird Scare")
-        self.clock = pygame.time.Clock()
+        # Initialize pg components
+        pg.init()
+        self.screen = pg.display.set_mode((globals.SCREEN_WIDTH, globals.SCREEN_HEIGHT))
+        pg.display.set_caption("Bird Scare")
+        self.clock = pg.time.Clock()
         self.dt = 0  # Delta time
         self.running = True
 
@@ -43,7 +44,24 @@ class Game:
         self.curr_state = "playing"
 
         # Create UI elements
-        self.score_font = pygame.font.Font("content/Arcade-Normal/ARCADE_N.TTF", 24)
+        self.manager = pggui.UIManager((globals.SCREEN_WIDTH, globals.SCREEN_HEIGHT))
+
+        play_layout_rect = pg.Rect(globals.SCREEN_WIDTH / 2 - globals.BUTTON_WIDTH / 2,
+                              globals.SCREEN_HEIGHT / 2 - (globals.BUTTON_HEIGHT + globals.BUTTONS_SPACING / 2),
+                              globals.BUTTON_WIDTH, globals.BUTTON_HEIGHT)
+        self.play_button = pggui.elements.UIButton(relative_rect=play_layout_rect,
+                                                    text='Play',
+                                                    manager=self.manager)
+
+        quit_layout_rect = pg.Rect(globals.SCREEN_WIDTH / 2 - globals.BUTTON_WIDTH / 2,
+                                   globals.SCREEN_HEIGHT / 2 - globals.BUTTON_HEIGHT + globals.BUTTONS_SPACING,
+                                   globals.BUTTON_WIDTH, globals.BUTTON_HEIGHT)
+        self.quit_button = pggui.elements.UIButton(relative_rect=quit_layout_rect,
+                                                   text='Quit',
+                                                   manager=self.manager)
+
+        self.score_font = pg.font.Font("content/Arcade-Normal/ARCADE_N.TTF", 24)
+
 
     def update_game(self):
         for entity in self.entities:
@@ -68,7 +86,7 @@ class Game:
             new_bird.set_cell_coords(cell_x, cell_y)
 
     def update_pause(self):
-        pass
+        self.manager.update(self.dt)
 
     def update(self):
         if self.curr_state == "playing":
@@ -95,14 +113,28 @@ class Game:
 
         if self.curr_state == "pause":
             # Blur and draw the UI if the game is paused
-            pass
+            small = pg.transform.smoothscale(self.screen, (200, 150))
+            blur = pg.transform.smoothscale(small, (globals.SCREEN_WIDTH, globals.SCREEN_HEIGHT))
+            self.screen.blit(blur, (0, 0))
+            self.manager.draw_ui(self.screen)
 
 
     def handle_events(self) -> None:
-        # Check for pygame events
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT or pygame.key.get_pressed()[pygame.K_ESCAPE]:  # If the screen is closed, quit the program
+        # Check for pg events
+        for event in pg.event.get():
+            if event.type == pg.QUIT:  # If the screen is closed, quit the program
                 self.running = False
+            if pg.key.get_pressed()[pg.K_ESCAPE]:
+                self.curr_state = "pause"
+
+            if self.curr_state == "pause":
+                if event.type == pggui.UI_BUTTON_PRESSED:
+                    if event.ui_element == self.play_button:
+                        self.curr_state = "playing"
+                    elif event.ui_element == self.quit_button:
+                        self.running = False
+
+                self.manager.process_events(event)
 
 
     def game_loop(self):
@@ -120,7 +152,7 @@ class Game:
             self.render()
 
             # updates the entire canvas
-            pygame.display.flip()
+            pg.display.flip()
 
         # Exit the loop
-        pygame.quit()
+        pg.quit()
