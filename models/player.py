@@ -19,6 +19,8 @@ class Player(Entity):
 
         self.speed = Player.START_SPEED
 
+        self.score = 0
+
 
     def update(self):
         keys = pg.key.get_pressed()
@@ -51,7 +53,12 @@ class Player(Entity):
         """
         target = bird.pos - self.pos
 
+        if not bird.scared:
+            self.score += 1
+
         bird.fly_away(target)
+
+
 
     def check_birds(self, grid):
         """
