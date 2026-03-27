@@ -6,15 +6,12 @@ from grid import Grid
 from models.player import Player
 from models.bird import Bird
 from models.tilemap import Tilemap
+from models.upgrades.scare_upgrade import ScareUpgrade
+from models.upgrades.spawn_upgrade import SpawnUpgrade
+from models.upgrades.speed_upgrade import SpeedUpgrade
+
 
 class Game:
-
-    BIRD_SPAWN_FREQ = [10, 50] # Timer will be anywhere between these two values
-
-    @staticmethod
-    def get_new_spawn_timer():
-        return random.randint(Game.BIRD_SPAWN_FREQ[0], Game.BIRD_SPAWN_FREQ[1])
-
     def __init__(self):
         # Initialize pg components
         pg.init()
@@ -33,24 +30,33 @@ class Game:
         self.player = Player()
         self.entities.append(self.player)
 
-        self.spawn_timer = Game.get_new_spawn_timer()
+        self.bird_spawn_freq = [30, 100]  # Timer will be anywhere between these two values
+
+        self.spawn_timer = self.get_new_spawn_timer()
 
         # Create a grid object
         self.grid = Grid()
         cell_x, cell_y = self.grid.update_position(self.player.get_cell_coords(), self.player.pos, self.player)
         self.player.set_cell_coords(cell_x, cell_y)
 
+        # Create upgrades
+        self.upgrades = []
+
+        self.upgrades.append(SpeedUpgrade(self.player))
+        self.upgrades.append(SpawnUpgrade(self.bird_spawn_freq))
+        self.upgrades.append(ScareUpgrade(self.player))
+
         # Define game state
         self.curr_state = "playing"
 
         # Create UI elements
-        self.manager = pggui.UIManager((globals.SCREEN_WIDTH, globals.SCREEN_HEIGHT))
-        self.manager.add_font_paths(
+        self.pause_manager = pggui.UIManager((globals.SCREEN_WIDTH, globals.SCREEN_HEIGHT))
+        self.pause_manager.add_font_paths(
             "pixel",
             "content/Arcade-Normal/ARCADE_N.TTF"
         )
         # Reload theme so it picks up the font
-        self.manager.get_theme().load_theme("content/theme.json")
+        self.pause_manager.get_theme().load_theme("content/pause_theme.json")
 
         center_x = globals.SCREEN_WIDTH // 2
         center_y = globals.SCREEN_HEIGHT // 2
@@ -62,8 +68,8 @@ class Game:
             globals.BUTTON_HEIGHT
         )
         self.play_button = pggui.elements.UIButton(relative_rect=play_layout_rect,
-                                                    text='Play',
-                                                    manager=self.manager)
+                                                   text='Play',
+                                                   manager=self.pause_manager)
 
         quit_layout_rect = pg.Rect(
             center_x - globals.BUTTON_WIDTH // 2,
@@ -73,9 +79,49 @@ class Game:
         )
         self.quit_button = pggui.elements.UIButton(relative_rect=quit_layout_rect,
                                                    text='Quit',
-                                                   manager=self.manager)
+                                                   manager=self.pause_manager)
 
         self.score_font = pg.font.Font("content/Arcade-Normal/ARCADE_N.TTF", 24)
+
+        self.upgrade_manager = pggui.UIManager((globals.SCREEN_WIDTH, globals.SCREEN_HEIGHT))
+
+        # Upgrade menu GUI
+        self.upgrade_manager.add_font_paths(
+            "pixel",
+            "content/Arcade-Normal/ARCADE_N.TTF"
+        )
+
+        # Reload theme so it picks up the font
+        self.pause_manager.get_theme().load_theme("content/upgrade_theme.json")
+
+        self.upgrade_buttons = []
+
+        margin = 40
+        spacing = 20
+
+        usable_height = globals.SCREEN_HEIGHT - 2 * margin - 2 * spacing
+        button_height = usable_height // 3
+        button_width = globals.SCREEN_WIDTH - 2 * margin
+
+        for i in range(3):
+            rect = pg.Rect(
+                margin,
+                margin + i * (button_height + spacing),
+                button_width,
+                button_height
+            )
+
+            button = pggui.elements.UIButton(
+                relative_rect=rect,
+                text=str(self.upgrades[i]),
+                manager=self.upgrade_manager
+            )
+
+            self.upgrade_buttons.append(button)
+
+
+    def get_new_spawn_timer(self):
+        return random.randint(self.bird_spawn_freq[0], self.bird_spawn_freq[1])
 
 
     def update_game(self):
@@ -95,12 +141,12 @@ class Game:
         if self.spawn_timer < 0:
             new_bird = Bird()
             self.entities.append(new_bird)
-            self.spawn_timer = Game.get_new_spawn_timer()
+            self.spawn_timer = self.get_new_spawn_timer()
             cell_x, cell_y = self.grid.update_position(new_bird.get_cell_coords(), new_bird.pos, new_bird)
             new_bird.set_cell_coords(cell_x, cell_y)
 
     def update_pause(self):
-        self.manager.update(self.dt)
+        self.pause_manager.update(self.dt)
 
     def update(self):
         if self.curr_state == "playing":
@@ -130,7 +176,7 @@ class Game:
             small = pg.transform.smoothscale(self.screen, (200, 150))
             blur = pg.transform.smoothscale(small, (globals.SCREEN_WIDTH, globals.SCREEN_HEIGHT))
             self.screen.blit(blur, (0, 0))
-            self.manager.draw_ui(self.screen)
+            self.pause_manager.draw_ui(self.screen)
 
 
     def handle_events(self) -> None:
@@ -138,7 +184,7 @@ class Game:
         for event in pg.event.get():
             if event.type == pg.QUIT:  # If the screen is closed, quit the program
                 self.running = False
-            if pg.key.get_pressed()[pg.K_ESCAPE]:
+            if pg.key.get_pressed()[pg.K_ESCAPE] and self.curr_state == "playing":
                 self.curr_state = "pause"
 
             if self.curr_state == "pause":
@@ -148,7 +194,7 @@ class Game:
                     elif event.ui_element == self.quit_button:
                         self.running = False
 
-                self.manager.process_events(event)
+                self.pause_manager.process_events(event)
 
 
     def game_loop(self):

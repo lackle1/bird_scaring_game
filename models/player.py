@@ -2,7 +2,7 @@ import pygame as pg
 from pygame.constants import RLEACCEL
 
 import globals
-from entity import Entity
+from models.entity import Entity
 
 
 class Player(Entity):
@@ -18,6 +18,8 @@ class Player(Entity):
                                    globals.SCREEN_HEIGHT/2 - self.rect.height/2)
 
         self.speed = Player.START_SPEED
+
+        self.scare_radius = 100
 
         self.score = 0
 
@@ -66,5 +68,5 @@ class Player(Entity):
         """
         cell_x, cell_y = self.get_cell_coords()
         for unit in grid.get_unit_from_adjacent_cells(cell_x, cell_y):
-            if (unit.pos - self.pos).length() <= 100 and unit != self:
+            if (unit.pos - self.pos).length() <= self.scare_radius and unit != self:
                 self.scare_bird(unit)
