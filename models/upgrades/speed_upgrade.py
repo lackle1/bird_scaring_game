@@ -7,8 +7,7 @@ class SpeedUpgrade(Upgrade):
         self.player = player
 
     def activate(self):
-        self.player.speed += 2
+        self.player.speed += 1
 
     def __str__(self):
-        return (f"Increase your speed by 5"
-                f"Speed after upgrade -> {self.player.speed + 5}")
+        return "Increase your speed by 1"

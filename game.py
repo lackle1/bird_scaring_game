@@ -49,6 +49,9 @@ class Game:
         # Define game state
         self.curr_state = "playing"
 
+        # Threshold to next upgrade
+        self.upgrade_threshold = 5
+
         # Create UI elements
         self.pause_manager = pggui.UIManager((globals.SCREEN_WIDTH, globals.SCREEN_HEIGHT))
         self.pause_manager.add_font_paths(
@@ -92,11 +95,11 @@ class Game:
         )
 
         # Reload theme so it picks up the font
-        self.pause_manager.get_theme().load_theme("content/upgrade_theme.json")
+        self.upgrade_manager.get_theme().load_theme("content/upgrade_theme.json")
 
         self.upgrade_buttons = []
 
-        margin = 40
+        margin = 60
         spacing = 20
 
         usable_height = globals.SCREEN_HEIGHT - 2 * margin - 2 * spacing
@@ -133,6 +136,7 @@ class Game:
                 if entity.scared:
                     if entity.pos[0] < -entity.sprite_dims.x or entity.pos[0] > globals.SCREEN_WIDTH or entity.pos[1] < -entity.sprite_dims.y or entity.pos[1] > globals.SCREEN_HEIGHT:
                         self.entities.remove(entity)
+                        self.player.score += 1
 
         self.player.check_birds(self.grid)
 
@@ -145,6 +149,14 @@ class Game:
             cell_x, cell_y = self.grid.update_position(new_bird.get_cell_coords(), new_bird.pos, new_bird)
             new_bird.set_cell_coords(cell_x, cell_y)
 
+        # Check if the upgrades threshold has been reached
+        if self.player.score >= self.upgrade_threshold:
+            self.upgrade_threshold += self.upgrade_threshold * 1.5
+            self.curr_state = "upgrade"
+
+    def update_upgrades(self):
+        self.upgrade_manager.update(self.dt)
+
     def update_pause(self):
         self.pause_manager.update(self.dt)
 
@@ -153,6 +165,14 @@ class Game:
             self.update_game()
         elif self.curr_state == "pause":
             self.update_pause()
+        elif self.curr_state == "upgrade":
+            self.update_upgrades()
+
+    def add_blur(self):
+        # Blur and draw the UI if the game is paused
+        small = pg.transform.smoothscale(self.screen, (200, 150))
+        blur = pg.transform.smoothscale(small, (globals.SCREEN_WIDTH, globals.SCREEN_HEIGHT))
+        self.screen.blit(blur, (0, 0))
 
 
     def render(self):
@@ -172,12 +192,30 @@ class Game:
         self.screen.blit(score, (30, 30))
 
         if self.curr_state == "pause":
-            # Blur and draw the UI if the game is paused
-            small = pg.transform.smoothscale(self.screen, (200, 150))
-            blur = pg.transform.smoothscale(small, (globals.SCREEN_WIDTH, globals.SCREEN_HEIGHT))
-            self.screen.blit(blur, (0, 0))
+            self.add_blur()
             self.pause_manager.draw_ui(self.screen)
+        elif self.curr_state == "upgrade":
+            self.add_blur()
+            self.upgrade_manager.draw_ui(self.screen)
 
+    def handle_pause_events(self, event):
+        if event.type == pggui.UI_BUTTON_PRESSED:
+            if event.ui_element == self.play_button:
+                self.curr_state = "playing"
+            elif event.ui_element == self.quit_button:
+                self.running = False
+
+        self.pause_manager.process_events(event)
+
+    def handle_upgrade_events(self, event):
+        if event.type == pggui.UI_BUTTON_PRESSED:
+            for i in range(len(self.upgrade_buttons)):
+                if event.ui_element == self.upgrade_buttons[i]:
+                    self.upgrades[i].activate()
+
+            self.curr_state = "playing"
+
+        self.upgrade_manager.process_events(event)
 
     def handle_events(self) -> None:
         # Check for pg events
@@ -188,13 +226,10 @@ class Game:
                 self.curr_state = "pause"
 
             if self.curr_state == "pause":
-                if event.type == pggui.UI_BUTTON_PRESSED:
-                    if event.ui_element == self.play_button:
-                        self.curr_state = "playing"
-                    elif event.ui_element == self.quit_button:
-                        self.running = False
+                self.handle_pause_events(event)
+            elif self.curr_state == "upgrade":
+                self.handle_upgrade_events(event)
 
-                self.pause_manager.process_events(event)
 
 
     def game_loop(self):

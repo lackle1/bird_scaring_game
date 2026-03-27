@@ -8,9 +8,9 @@ class SpawnUpgrade(Upgrade):
 
     def activate(self):
         if self.spawn_timer[0] > 15:
-            self.spawn_timer -= 5
+            self.spawn_timer[0] -= 5
         if self.spawn_timer[1] > 30:
-            self.spawn_timer -= 5
+            self.spawn_timer[1] -= 5
 
     def __str__(self):
         return "Increase the bird spawning frequency"

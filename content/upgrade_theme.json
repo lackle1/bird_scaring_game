@@ -14,9 +14,13 @@
       "active_border": "#000000"
     },
     "misc": {
-      "border_width": "4",
-      "shadow_width": "6",
+      "border_width": "5",
+      "shadow_width": "8",
       "shape": "rectangle"
+    },
+    "font": {
+      "name": "pixel",
+      "size": "20"
     }
   }
 }

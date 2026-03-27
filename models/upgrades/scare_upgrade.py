@@ -10,5 +10,4 @@ class ScareUpgrade(Upgrade):
         self.player.scare_radius += 5
 
     def __str__(self):
-        return (f"Increase your scaring radius by 5\n"
-                f"Scare radius after upgrade -> {self.player.scare_radius + 5}")
+        return "Increase your scaring radius by 5"
