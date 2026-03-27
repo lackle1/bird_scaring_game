@@ -7,8 +7,8 @@ import random
 from pygame.constants import RLEACCEL
 import numpy as np
 
-from entity import Entity
-from animated_sprite import AnimatedSprite
+from models.entity import Entity
+from models.animated_sprite import AnimatedSprite
 
 
 class Bird(Entity):
