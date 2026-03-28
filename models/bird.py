@@ -19,14 +19,14 @@ class Bird(Entity):
 
     LANDING_MARGIN = 0.025
     LANDING_BOUNDS = pg.Rect(globals.SCREEN_WIDTH * LANDING_MARGIN, globals.SCREEN_HEIGHT * LANDING_MARGIN,
-                             globals.SCREEN_WIDTH * (1 - LANDING_MARGIN * 2), globals.SCREEN_HEIGHT * (1 - LANDING_MARGIN * 2))
+                             globals.SCREEN_WIDTH * (1 - LANDING_MARGIN * 2) - 50, globals.SCREEN_HEIGHT * (1 - LANDING_MARGIN * 2) - 50)
 
     @staticmethod
     def get_start_pos(target):
         closest_edge = np.argmin((target.x, globals.SCREEN_WIDTH - target.x,
                                   target.y, globals.SCREEN_HEIGHT - target.y))
 
-        dist_from_edge = 200
+        dist_from_edge = 50
         match closest_edge:
             case 0:
                 start_pos = pg.math.Vector2(

@@ -1,5 +1,6 @@
 import pygame as pg
 import pygame_gui as pggui
+import pygame.mixer as pgmix
 import random
 import globals
 from grid import Grid
@@ -20,6 +21,28 @@ class Game:
         self.clock = pg.time.Clock()
         self.dt = 0  # Delta time
         self.running = True
+
+        # Initialise sound and music
+        pg.mixer.pre_init(44100, -16, 8, 128)
+        pgmix.init()
+        pgmix.music.load('content/audio/forest.wav')
+        pgmix.music.play(-1)
+        globals.SOUNDS = {
+            'upgrade': pgmix.Sound('content/audio/portiles/success.wav'),
+            'click': pgmix.Sound('content/audio/portiles/click.wav'),
+            'score': pgmix.Sound('content/audio/score.wav'),
+            'scare': pgmix.Sound('content/audio/portiles/activate.wav'),
+            'flying': pgmix.Sound('content/audio/flying.wav')
+        }
+
+
+
+        # Reserve some channels for the flying sound
+        num_reserved = pgmix.set_reserved(3)
+        print(f"Num reserved{num_reserved}")
+        self.flying_sound_channels = []
+        for i in range(num_reserved):
+            self.flying_sound_channels.append(pgmix.Channel(i))
 
         # Create a tilemap
         self.tilemap = Tilemap("content/grass.png")
@@ -128,6 +151,8 @@ class Game:
 
 
     def update_game(self):
+        num_birds_flying = 0
+
         for entity in self.entities:
             entity.update()
             cell_x, cell_y = self.grid.update_position(entity.get_cell_coords(), entity.pos, entity)
@@ -137,6 +162,11 @@ class Game:
                     if entity.pos[0] < -entity.sprite_dims.x or entity.pos[0] > globals.SCREEN_WIDTH or entity.pos[1] < -entity.sprite_dims.y or entity.pos[1] > globals.SCREEN_HEIGHT:
                         self.entities.remove(entity)
                         self.player.score += 1
+                        globals.SOUNDS['score'].play()
+
+                if entity.vel != 0:
+                    num_birds_flying += 1
+
 
         self.player.check_birds(self.grid)
 
@@ -153,6 +183,17 @@ class Game:
         if self.player.score >= self.upgrade_threshold:
             self.upgrade_threshold += self.upgrade_threshold * 1.5
             self.curr_state = "upgrade"
+            pgmix.pause()
+            globals.SOUNDS['upgrade'].play()
+
+        # Play flying sounds based on how many birds are currently flying
+        for i in range(len(self.flying_sound_channels)):
+            is_busy = self.flying_sound_channels[i].get_busy()
+            if i < num_birds_flying:
+                if not is_busy:
+                    self.flying_sound_channels[i].play(globals.SOUNDS['flying'], -1)
+            elif is_busy:
+                self.flying_sound_channels[i].fadeout(200)
 
     def update_upgrades(self):
         self.upgrade_manager.update(self.dt)
@@ -200,8 +241,11 @@ class Game:
 
     def handle_pause_events(self, event):
         if event.type == pggui.UI_BUTTON_PRESSED:
+            globals.SOUNDS['click'].play()
             if event.ui_element == self.play_button:
                 self.curr_state = "playing"
+                pgmix.unpause()
+                pgmix.music.unpause()
             elif event.ui_element == self.quit_button:
                 self.running = False
 
@@ -214,6 +258,8 @@ class Game:
                     self.upgrades[i].activate()
 
             self.curr_state = "playing"
+            globals.SOUNDS['click'].play()
+            pgmix.unpause()
 
         self.upgrade_manager.process_events(event)
 
@@ -224,7 +270,8 @@ class Game:
                 self.running = False
             if pg.key.get_pressed()[pg.K_ESCAPE] and self.curr_state == "playing":
                 self.curr_state = "pause"
-
+                pgmix.pause()
+                pgmix.music.pause()
             if self.curr_state == "pause":
                 self.handle_pause_events(event)
             elif self.curr_state == "upgrade":
