@@ -20,5 +20,26 @@
       "name": "pixel",
       "size": "20"
     }
+  },
+  "label": {
+    "font": {
+      "name": "pixel",
+      "size": "76"
+    },
+    "colours": {
+      "normal_text": "#ffffff",
+      "text_shadow": "#000000"
+    },
+    "misc":
+         {
+             "text_shadow": "1",
+             "text_shadow_size": "4",
+             "text_shadow_offset": "0,0"
+         }
+  },
+  "#shadow_label": {
+  "colours": {
+    "normal_text": "#000000"
   }
+}
 }

@@ -9,7 +9,7 @@ class Player(Entity):
     START_SPEED = 4
     def __init__(self):
         super(Player, self).__init__()
-        self.sprite = pg.image.load("content/player.png").convert()
+        self.sprite = pg.image.load("content/sprites/player.png").convert()
         self.sprite.set_colorkey((0, 0, 0), RLEACCEL)
         self.sprite = pg.transform.scale(self.sprite, (self.sprite.get_width() * 2, self.sprite.get_height() * 2))
         self.rect = self.sprite.get_rect()
