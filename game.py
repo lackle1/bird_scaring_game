@@ -2,6 +2,7 @@ import pygame as pg
 import pygame_gui as pggui
 import pygame.mixer as pgmix
 import random
+import math
 
 from pygame_gui.elements import UITextBox
 
@@ -78,7 +79,12 @@ class Game:
         # Threshold to next upgrade
         self.upgrade_threshold = 5
 
+        self.score_font = pg.font.Font("content/fonts/ARCADE_N.TTF", 24)
+
         # Create UI elements
+        """""""""""""""""""""""""""""""""""""""""""""""
+        """"""""""""""Pause menu UI""""""""""""""""""""
+        """""""""""""""""""""""""""""""""""""""""""""""
         self.pause_manager = pggui.UIManager((globals.SCREEN_WIDTH, globals.SCREEN_HEIGHT))
         self.pause_manager.add_font_paths(
             "pixel",
@@ -132,11 +138,10 @@ class Game:
             manager=self.pause_manager
         )
 
-        self.score_font = pg.font.Font("content/fonts/ARCADE_N.TTF", 24)
-
+        """""""""""""""""""""""""""""""""""""""""""""""
+        """"""""""""""Upgrade menu UI""""""""""""""""""
+        """""""""""""""""""""""""""""""""""""""""""""""
         self.upgrade_manager = pggui.UIManager((globals.SCREEN_WIDTH, globals.SCREEN_HEIGHT))
-
-        # Upgrade menu GUI
         self.upgrade_manager.add_font_paths(
             "pixel",
             "content/fonts/ARCADE_N.TTF"
@@ -170,6 +175,10 @@ class Game:
 
             self.upgrade_buttons.append(button)
 
+
+        """""""""""""""""""""""""""""""""""""""""""""""
+        """"""""""""""Start menu UI""""""""""""""""""""
+        """""""""""""""""""""""""""""""""""""""""""""""
         self.start_manager = pggui.UIManager((globals.SCREEN_WIDTH, globals.SCREEN_HEIGHT))
         self.start_manager.add_font_paths(
             "pixel",
@@ -242,6 +251,15 @@ class Game:
             manager=self.start_manager
         )
 
+        # Title animation
+        self.title_time = 0
+        self.base_title_x = title_rect.x
+        self.base_title_y = title_rect.y
+
+        self.title_label.set_active_effect(
+            pggui.TEXT_EFFECT_FADE_IN,
+            params={'time_per_alpha_change': 0.1}
+        )
 
     def get_new_spawn_timer(self):
         return random.randint(self.bird_spawn_freq[0], self.bird_spawn_freq[1])
@@ -299,6 +317,15 @@ class Game:
         self.pause_manager.update(self.dt)
 
     def update_start(self):
+        self.title_time += self.dt
+
+        # Floating effect
+        offset = math.sin(self.title_time * 2) * 3
+
+        self.title_label.set_relative_position((
+            self.base_title_x,
+            self.base_title_y + offset
+        ))
         self.start_manager.update(self.dt)
 
     def update(self):
