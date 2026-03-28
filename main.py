@@ -1,5 +1,4 @@
-import pygame
-from game import Game
+from content.themes.game import Game
 
 def main():
     """

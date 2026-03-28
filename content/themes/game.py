@@ -1,6 +1,9 @@
 import pygame as pg
 import pygame_gui as pggui
 import random
+
+from pygame_gui.elements import UITextBox
+
 import globals
 from grid import Grid
 from models.player import Player
@@ -22,7 +25,7 @@ class Game:
         self.running = True
 
         # Create a tilemap
-        self.tilemap = Tilemap("content/grass.png")
+        self.tilemap = Tilemap("content/sprites/grass.png")
 
         self.entities = []
 
@@ -47,7 +50,7 @@ class Game:
         self.upgrades.append(ScareUpgrade(self.player))
 
         # Define game state
-        self.curr_state = "playing"
+        self.curr_state = "start"
 
         # Threshold to next upgrade
         self.upgrade_threshold = 5
@@ -56,10 +59,10 @@ class Game:
         self.pause_manager = pggui.UIManager((globals.SCREEN_WIDTH, globals.SCREEN_HEIGHT))
         self.pause_manager.add_font_paths(
             "pixel",
-            "content/Arcade-Normal/ARCADE_N.TTF"
+            "content/fonts/ARCADE_N.TTF"
         )
         # Reload theme so it picks up the font
-        self.pause_manager.get_theme().load_theme("content/pause_theme.json")
+        self.pause_manager.get_theme().load_theme("content/themes/pause_theme.json")
 
         center_x = globals.SCREEN_WIDTH // 2
         center_y = globals.SCREEN_HEIGHT // 2
@@ -84,18 +87,40 @@ class Game:
                                                    text='Quit',
                                                    manager=self.pause_manager)
 
-        self.score_font = pg.font.Font("content/Arcade-Normal/ARCADE_N.TTF", 24)
+        pause_text_rect = pg.Rect(
+            center_x - globals.TEXT_WIDTH // 2,
+            play_layout_rect.top - globals.TEXT_HEIGHT - globals.TEXT_SPACING,
+            globals.TEXT_WIDTH,
+            globals.TEXT_HEIGHT
+        )
+
+        shadow_rect = pause_text_rect.move(4, 4)
+
+        self.pause_shadow = pggui.elements.UILabel(
+            relative_rect=shadow_rect,
+            text="Pause",
+            manager=self.pause_manager,
+            object_id="#shadow_label"
+        )
+
+        self.pause_label = pggui.elements.UILabel(
+            relative_rect=pause_text_rect,
+            text="Pause",
+            manager=self.pause_manager
+        )
+
+        self.score_font = pg.font.Font("content/fonts/ARCADE_N.TTF", 24)
 
         self.upgrade_manager = pggui.UIManager((globals.SCREEN_WIDTH, globals.SCREEN_HEIGHT))
 
         # Upgrade menu GUI
         self.upgrade_manager.add_font_paths(
             "pixel",
-            "content/Arcade-Normal/ARCADE_N.TTF"
+            "content/fonts/ARCADE_N.TTF"
         )
 
         # Reload theme so it picks up the font
-        self.upgrade_manager.get_theme().load_theme("content/upgrade_theme.json")
+        self.upgrade_manager.get_theme().load_theme("content/themes/upgrade_theme.json")
 
         self.upgrade_buttons = []
 
@@ -121,6 +146,78 @@ class Game:
             )
 
             self.upgrade_buttons.append(button)
+
+        self.start_manager = pggui.UIManager((globals.SCREEN_WIDTH, globals.SCREEN_HEIGHT))
+        self.start_manager.add_font_paths(
+            "pixel",
+            "content/fonts/ARCADE_N.TTF"
+        )
+        # Reload theme so it picks up the font
+        self.start_manager.get_theme().load_theme("content/themes/pause_theme.json")
+
+        top_offset = globals.SCREEN_HEIGHT // 5  # pushes everything slightly down
+        spacing = globals.BUTTONS_SPACING + 10
+
+        title_rect = pg.Rect(
+            center_x - globals.TEXT_WIDTH,
+            top_offset - globals.TEXT_HEIGHT,
+            globals.TEXT_WIDTH * 2,
+            globals.TEXT_HEIGHT * 2
+        )
+
+        shadow_rect = title_rect.move(4, 4)
+
+        self.start_shadow = pggui.elements.UILabel(
+            relative_rect=shadow_rect,
+            text="Bird Scare",
+            manager=self.start_manager,
+            object_id="#shadow_label"
+        )
+
+        self.title_label = pggui.elements.UILabel(
+            relative_rect=title_rect,
+            text="Bird Scare",
+            manager=self.start_manager
+        )
+
+        play_rect = pg.Rect(
+            center_x - globals.BUTTON_WIDTH // 2,
+            top_offset + spacing + globals.TEXT_SPACING,
+            globals.BUTTON_WIDTH,
+            globals.BUTTON_HEIGHT
+        )
+
+        self.start_button = pggui.elements.UIButton(
+            relative_rect=play_rect,
+            text="Start",
+            manager=self.start_manager
+        )
+
+        options_rect = pg.Rect(
+            center_x - globals.BUTTON_WIDTH // 2,
+            play_rect.bottom + spacing,
+            globals.BUTTON_WIDTH,
+            globals.BUTTON_HEIGHT
+        )
+
+        self.options_button = pggui.elements.UIButton(
+            relative_rect=options_rect,
+            text="Options",
+            manager=self.start_manager
+        )
+
+        quit_rect = pg.Rect(
+            center_x - globals.BUTTON_WIDTH // 2,
+            options_rect.bottom + spacing,
+            globals.BUTTON_WIDTH,
+            globals.BUTTON_HEIGHT
+        )
+
+        self.quit_start_button = pggui.elements.UIButton(
+            relative_rect=quit_rect,
+            text="Quit",
+            manager=self.start_manager
+        )
 
 
     def get_new_spawn_timer(self):
@@ -160,6 +257,9 @@ class Game:
     def update_pause(self):
         self.pause_manager.update(self.dt)
 
+    def update_start(self):
+        self.start_manager.update(self.dt)
+
     def update(self):
         if self.curr_state == "playing":
             self.update_game()
@@ -167,6 +267,8 @@ class Game:
             self.update_pause()
         elif self.curr_state == "upgrade":
             self.update_upgrades()
+        elif self.curr_state == "start":
+            self.update_start()
 
     def add_blur(self):
         # Blur and draw the UI if the game is paused
@@ -197,6 +299,9 @@ class Game:
         elif self.curr_state == "upgrade":
             self.add_blur()
             self.upgrade_manager.draw_ui(self.screen)
+        elif self.curr_state == "start":
+            self.add_blur()
+            self.start_manager.draw_ui(self.screen)
 
     def handle_pause_events(self, event):
         if event.type == pggui.UI_BUTTON_PRESSED:
@@ -206,6 +311,15 @@ class Game:
                 self.running = False
 
         self.pause_manager.process_events(event)
+
+    def handle_start_events(self, event):
+        if event.type == pggui.UI_BUTTON_PRESSED:
+            if event.ui_element == self.start_button:
+                self.curr_state = "playing"
+            elif event.ui_element == self.quit_start_button:
+                self.running = False
+
+        self.start_manager.process_events(event)
 
     def handle_upgrade_events(self, event):
         if event.type == pggui.UI_BUTTON_PRESSED:
@@ -229,7 +343,8 @@ class Game:
                 self.handle_pause_events(event)
             elif self.curr_state == "upgrade":
                 self.handle_upgrade_events(event)
-
+            elif self.curr_state == "start":
+                self.handle_start_events(event)
 
 
     def game_loop(self):
