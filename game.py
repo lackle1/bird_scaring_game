@@ -29,15 +29,16 @@ class Game:
         # Initialise sound and music
         pg.mixer.pre_init(44100, -16, 8, 128)
         pgmix.init()
-        pgmix.music.load('content/audio/forest.wav')
+        pgmix.music.load('content/audio/GameRiff2.wav')
         pgmix.music.play(-1)
         globals.SOUNDS = {
             'upgrade': pgmix.Sound('content/audio/portiles/success.wav'),
             'click': pgmix.Sound('content/audio/portiles/click.wav'),
             'score': pgmix.Sound('content/audio/score.wav'),
-            'scare': pgmix.Sound('content/audio/portiles/activate.wav'),
             'flying': pgmix.Sound('content/audio/flying.wav')
         }
+        for sound in globals.SOUNDS.values():
+            sound.set_volume(0.25)
 
 
 
@@ -77,7 +78,8 @@ class Game:
         self.curr_state = "start"
 
         # Threshold to next upgrade
-        self.upgrade_threshold = 5
+        self.upgrade_threshold = 10
+        self.upgrade_amount = 10
 
         self.score_font = pg.font.Font("content/fonts/ARCADE_N.TTF", 24)
 
@@ -296,7 +298,8 @@ class Game:
 
         # Check if the upgrades threshold has been reached
         if self.player.score >= self.upgrade_threshold:
-            self.upgrade_threshold += self.upgrade_threshold * 1.5
+            self.upgrade_threshold += self.upgrade_amount
+            self.upgrade_amount *= 1.25
             self.curr_state = "upgrade"
             pgmix.pause()
             globals.SOUNDS['upgrade'].play()
